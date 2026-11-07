@@ -1,0 +1,413 @@
+{
+  "map": {
+    "size": 100,
+    "unitsPerKm": 5,
+    "highwayZ": -1.5
+  },
+  "simulation": {
+    "cycleMinutes": 1440,
+    "startHour": 14,
+    "speedMinutesPerSecond": 12,
+    "laborAlertHours": 4
+  },
+  "coldStorage": {
+    "nodeId": "depot",
+    "capacityKg": 900,
+    "initialUsedKg": 410,
+    "alertThreshold": 0.9
+  },
+  "nodes": [
+    {
+      "id": "depot",
+      "label": "Vựa Hải sản Biển Xanh",
+      "type": "depot",
+      "position": { "x": 0, "y": 0, "z": 0 },
+      "distanceKm": 0,
+      "volumeKg": 410,
+      "customers": ["retail-counter", "wholesaler-minh"],
+      "description": "Vựa và kho lạnh mặt tiền quốc lộ; điểm bắt đầu chu kỳ mô phỏng."
+    },
+    {
+      "id": "port-a",
+      "label": "Cảng cá A",
+      "type": "port",
+      "position": { "x": -15, "y": 0, "z": 0 },
+      "distanceKm": 3,
+      "volumeKg": 210,
+      "customers": [],
+      "description": "Nguồn hàng cá và mực cập bến; cách vựa đúng 3 km."
+    },
+    {
+      "id": "port-b",
+      "label": "Cảng cá B",
+      "type": "port",
+      "position": { "x": 0, "y": 0, "z": 50 },
+      "distanceKm": 10,
+      "volumeKg": 340,
+      "customers": [],
+      "description": "Nguồn hàng tôm và hải sản hỗn hợp; cách vựa đúng 10 km."
+    },
+    {
+      "id": "bus-station",
+      "label": "Bến xe liên tỉnh",
+      "type": "bus_station",
+      "position": { "x": 54, "y": 0, "z": -14 },
+      "distanceKm": 11.2,
+      "volumeKg": 100,
+      "customers": [],
+      "description": "Điểm gửi hàng đi tỉnh, nằm ngoài rìa bản đồ 100 × 100."
+    },
+    {
+      "id": "retail-counter",
+      "label": "Quầy bán lẻ Biển Xanh",
+      "type": "retail",
+      "position": { "x": 4, "y": 0, "z": 0 },
+      "distanceKm": 0.8,
+      "volumeKg": 40,
+      "customers": [],
+      "description": "Quầy bán lẻ sát vựa, nhận hàng mỗi tối."
+    },
+    {
+      "id": "wholesaler-minh",
+      "label": "Thương lái Minh Phát",
+      "type": "wholesale_customer",
+      "position": { "x": 14, "y": 0, "z": 5 },
+      "distanceKm": 3,
+      "volumeKg": 140,
+      "customers": [],
+      "description": "Khách thương lái hiện tại, nhận đơn hải sản đóng thùng vào buổi tối."
+    }
+  ],
+  "routes": [
+    {
+      "id": "route-a-out",
+      "from": "depot",
+      "to": "port-a",
+      "direction": "outbound",
+      "taskId": "pickup-a",
+      "distanceKm": 3,
+      "durationMin": 45,
+      "costVnd": 39000,
+      "vehicle": "Xe tải lạnh 1,5 tấn",
+      "startMinute": 0,
+      "countsTowardDailyKm": true,
+      "description": "Chạy từ vựa đến Cảng A lấy lô hàng chiều."
+    },
+    {
+      "id": "route-a-in",
+      "from": "port-a",
+      "to": "depot",
+      "direction": "inbound",
+      "taskId": "pickup-a",
+      "distanceKm": 3,
+      "durationMin": 45,
+      "costVnd": 39000,
+      "vehicle": "Xe tải lạnh 1,5 tấn",
+      "startMinute": 75,
+      "countsTowardDailyKm": true,
+      "description": "Đưa 210 kg hàng từ Cảng A về kho vựa."
+    },
+    {
+      "id": "route-b-out",
+      "from": "depot",
+      "to": "port-b",
+      "direction": "outbound",
+      "taskId": "pickup-b",
+      "distanceKm": 10,
+      "durationMin": 60,
+      "costVnd": 130000,
+      "vehicle": "Xe tải lạnh 2,5 tấn",
+      "startMinute": 120,
+      "countsTowardDailyKm": true,
+      "description": "Chạy từ vựa đến Cảng B lấy lô hàng chiều."
+    },
+    {
+      "id": "route-b-in",
+      "from": "port-b",
+      "to": "depot",
+      "direction": "inbound",
+      "taskId": "pickup-b",
+      "distanceKm": 10,
+      "durationMin": 60,
+      "costVnd": 130000,
+      "vehicle": "Xe tải lạnh 2,5 tấn",
+      "startMinute": 180,
+      "countsTowardDailyKm": true,
+      "description": "Đưa 340 kg hàng từ Cảng B về kho vựa."
+    },
+    {
+      "id": "route-wholesale-delivery",
+      "from": "depot",
+      "to": "wholesaler-minh",
+      "direction": "outbound",
+      "taskId": "evening-packing-delivery",
+      "distanceKm": 3,
+      "durationMin": 24,
+      "costVnd": 37700,
+      "vehicle": "Xe van lạnh giao hàng",
+      "startMinute": 360,
+      "countsTowardDailyKm": true,
+      "description": "Giao 140 kg hàng đã đóng thùng cho thương lái Minh Phát."
+    },
+    {
+      "id": "route-retail-delivery",
+      "from": "depot",
+      "to": "retail-counter",
+      "direction": "outbound",
+      "taskId": "evening-packing-delivery",
+      "distanceKm": 0.8,
+      "durationMin": 24,
+      "costVnd": 5200,
+      "vehicle": "Xe van lạnh giao hàng",
+      "startMinute": 384,
+      "countsTowardDailyKm": true,
+      "description": "Bổ sung 40 kg hàng cho quầy bán lẻ cạnh vựa."
+    },
+    {
+      "id": "route-provincial-dispatch",
+      "from": "depot",
+      "to": "bus-station",
+      "direction": "outbound",
+      "taskId": "provincial-transit",
+      "distanceKm": 11.2,
+      "durationMin": 30,
+      "costVnd": 145600,
+      "vehicle": "Xe tải lạnh trung chuyển tỉnh",
+      "startMinute": 480,
+      "countsTowardDailyKm": true,
+      "description": "Xe chở kiện hàng từ vựa đến bến xe lúc 22:00 rồi rời bản đồ theo chuyến tỉnh."
+    },
+    {
+      "id": "route-fresh-receipt",
+      "from": "port-a",
+      "to": "depot",
+      "direction": "inbound",
+      "taskId": "morning-fresh-receipt",
+      "distanceKm": 3,
+      "durationMin": 45,
+      "costVnd": 39000,
+      "vehicle": "Xe tải lạnh 1,5 tấn",
+      "startMinute": 900,
+      "countsTowardDailyKm": true,
+      "description": "Chuyến sáng nhận 180 kg hải sản tươi từ Cảng A về kho lúc 05:00."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "pickup-a",
+      "name": "Lấy hàng Cảng A",
+      "kind": "pickup",
+      "flow": "inbound",
+      "startMinute": 0,
+      "duration": 120,
+      "workers": 2,
+      "crew": ["crew-lan", "crew-hung"],
+      "vehicle": "Xe tải lạnh 1,5 tấn",
+      "cost": { "fuelVnd": 78000, "laborVnd": 140000 },
+      "capacity": 210,
+      "inventoryDeltaKg": 210,
+      "inventoryEffectAtEnd": true,
+      "countsInWorkload": true,
+      "description": "14:00–16:00; hai chặng đi/về 3 km mỗi chặng, nhận 210 kg cá và mực."
+    },
+    {
+      "id": "pickup-b",
+      "name": "Lấy hàng Cảng B",
+      "kind": "pickup",
+      "flow": "inbound",
+      "startMinute": 120,
+      "duration": 120,
+      "workers": 2,
+      "crew": ["crew-lan", "crew-hung"],
+      "vehicle": "Xe tải lạnh 2,5 tấn",
+      "cost": { "fuelVnd": 260000, "laborVnd": 140000 },
+      "capacity": 340,
+      "inventoryDeltaKg": 340,
+      "inventoryEffectAtEnd": true,
+      "countsInWorkload": true,
+      "description": "16:00–18:00; hai chặng đi/về 10 km mỗi chặng, nhận 340 kg tôm và hải sản hỗn hợp."
+    },
+    {
+      "id": "sorting",
+      "name": "Phân loại và sơ chế hải sản",
+      "kind": "sorting",
+      "flow": "none",
+      "startMinute": 240,
+      "duration": 120,
+      "workers": 3,
+      "crew": ["crew-lan", "crew-hung", "crew-mai"],
+      "vehicle": "Xe tải nhỏ (điều phối nội bộ)",
+      "cost": { "fuelVnd": 0, "laborVnd": 210000 },
+      "capacity": 550,
+      "inventoryDeltaKg": 0,
+      "inventoryEffectAtEnd": false,
+      "countsInWorkload": true,
+      "description": "18:00–20:00; phân cỡ, làm sạch và đưa hàng vào kho lạnh."
+    },
+    {
+      "id": "evening-packing-delivery",
+      "name": "Đóng thùng, giao thương lái và bán lẻ",
+      "kind": "packing_delivery",
+      "flow": "outbound",
+      "startMinute": 360,
+      "duration": 120,
+      "workers": 2,
+      "crew": ["crew-lan", "crew-hung"],
+      "vehicle": "Xe van lạnh giao hàng",
+      "cost": { "fuelVnd": 42900, "laborVnd": 140000 },
+      "capacity": 180,
+      "inventoryDeltaKg": -180,
+      "inventoryEffectAtEnd": true,
+      "countsInWorkload": true,
+      "description": "20:00–22:00; đóng thùng và giao 140 kg cho thương lái, 40 kg cho quầy bán lẻ."
+    },
+    {
+      "id": "provincial-transit",
+      "name": "Gửi hàng tỉnh qua bến xe",
+      "kind": "provincial_dispatch",
+      "flow": "outbound",
+      "startMinute": 480,
+      "duration": 720,
+      "workers": 2,
+      "crew": ["crew-lan", "crew-hung"],
+      "vehicle": "Xe tải lạnh trung chuyển tỉnh và xe khách tuyến tỉnh",
+      "cost": { "fuelVnd": 145600, "laborVnd": 35000 },
+      "capacity": 100,
+      "inventoryDeltaKg": -100,
+      "inventoryEffectAtEnd": false,
+      "countsInWorkload": true,
+      "description": "Khởi hành 22:00; xe giao kiện 100 kg đến bến xe rồi rời map, thời gian trung chuyển 720 phút đến 10:00 hôm sau."
+    },
+    {
+      "id": "morning-fresh-receipt",
+      "name": "Nhận hàng tươi đầu ngày",
+      "kind": "fresh_receipt",
+      "flow": "inbound",
+      "startMinute": 900,
+      "duration": 120,
+      "workers": 2,
+      "crew": ["crew-mai", "crew-tuan"],
+      "vehicle": "Xe tải lạnh 1,5 tấn",
+      "cost": { "fuelVnd": 39000, "laborVnd": 140000 },
+      "capacity": 180,
+      "inventoryDeltaKg": 180,
+      "inventoryEffectAtEnd": true,
+      "countsInWorkload": true,
+      "description": "05:00–07:00 hôm sau; nhận và kiểm tra 180 kg hải sản tươi từ Cảng A."
+    }
+  ],
+  "scenarioPresets": {
+    "A": {
+      "label": "Hiện trạng: một thương lái và quầy bán lẻ",
+      "additionalCustomers": []
+    },
+    "B": {
+      "label": "Mở rộng: thêm 5 khách sỉ",
+      "additionalCustomers": [
+        {
+          "id": "wholesale-hai-au",
+          "name": "Hải Âu Seafood",
+          "type": "wholesale",
+          "position": { "x": 22, "y": 0, "z": 8 },
+          "volumeKg": 80,
+          "distanceKm": 4.7,
+          "description": "Khách sỉ nhà hàng, ưu tiên cá biển giao buổi tối."
+        },
+        {
+          "id": "wholesale-thuan-phat",
+          "name": "Thuận Phát Hải Sản",
+          "type": "wholesale",
+          "position": { "x": -25, "y": 0, "z": 12 },
+          "volumeKg": 95,
+          "distanceKm": 5.6,
+          "description": "Đại lý hải sản khu dân cư phía tây."
+        },
+        {
+          "id": "wholesale-song-xanh",
+          "name": "Sóng Xanh Foodservice",
+          "type": "wholesale",
+          "position": { "x": 8, "y": 0, "z": 28 },
+          "volumeKg": 70,
+          "distanceKm": 5.8,
+          "description": "Bếp ăn và nhà hàng, đặt hàng tôm và mực theo ngày."
+        },
+        {
+          "id": "wholesale-cho-moi",
+          "name": "Vựa sỉ Chợ Mới",
+          "type": "wholesale",
+          "position": { "x": -30, "y": 0, "z": -18 },
+          "volumeKg": 110,
+          "distanceKm": 7,
+          "description": "Đầu mối bán buôn hải sản tại chợ đầu mối."
+        },
+        {
+          "id": "wholesale-an-binh",
+          "name": "Thực phẩm An Bình",
+          "type": "wholesale",
+          "position": { "x": 34, "y": 0, "z": 22 },
+          "volumeKg": 60,
+          "distanceKm": 8.1,
+          "description": "Khách sỉ quy mô vừa, nhận hàng đã sơ chế."
+        }
+      ]
+    },
+    "C": {
+      "label": "Bổ sung chuyến lấy hàng Cảng A sáng hôm sau",
+      "additionalTasks": [
+        {
+          "id": "morning-pickup-a-extra",
+          "name": "Lấy bổ sung hàng Cảng A",
+          "kind": "pickup",
+          "flow": "inbound",
+          "startMinute": 1020,
+          "duration": 90,
+          "workers": 2,
+          "crew": ["crew-mai", "crew-tuan"],
+          "vehicle": "Xe tải lạnh 1,5 tấn",
+          "cost": { "fuelVnd": 78000, "laborVnd": 105000 },
+          "capacity": 120,
+          "inventoryDeltaKg": 120,
+          "inventoryEffectAtEnd": true,
+          "countsInWorkload": true,
+          "description": "07:00–08:30 hôm sau; đi lấy 120 kg hàng bổ sung, mỗi chặng đến cảng và quay về mất 45 phút."
+        }
+      ],
+      "additionalRoutes": [
+        {
+          "id": "route-a-extra-out",
+          "from": "depot",
+          "to": "port-a",
+          "direction": "outbound",
+          "taskId": "morning-pickup-a-extra",
+          "distanceKm": 3,
+          "durationMin": 45,
+          "costVnd": 39000,
+          "vehicle": "Xe tải lạnh 1,5 tấn",
+          "startMinute": 1020,
+          "countsTowardDailyKm": true,
+          "description": "Chuyến bổ sung 07:00 từ vựa đến Cảng A."
+        },
+        {
+          "id": "route-a-extra-in",
+          "from": "port-a",
+          "to": "depot",
+          "direction": "inbound",
+          "taskId": "morning-pickup-a-extra",
+          "distanceKm": 3,
+          "durationMin": 45,
+          "costVnd": 39000,
+          "vehicle": "Xe tải lạnh 1,5 tấn",
+          "startMinute": 1065,
+          "countsTowardDailyKm": true,
+          "description": "Chuyến đưa hàng bổ sung từ Cảng A về vựa, hoàn tất 08:30."
+        }
+      ]
+    }
+  },
+  "customerDefaults": {
+    "fuelCostPerKm": 13000,
+    "laborCostPerHour": 35000,
+    "deliveryDurationMin": 24,
+    "crewSize": 2
+  }
+}
