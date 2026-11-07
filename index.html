@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071820" />
+    <meta name="description" content="Bản đồ điều độ 3D cho vựa hải sản — theo dõi nguồn cung, kho lạnh, vận chuyển và tải vận hành." />
+    <title>Vựa Twin — Điều độ chuỗi lạnh</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="stylesheet" href="./style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-symbol" aria-hidden="true">
+            <svg viewBox="0 0 40 40" fill="none">
+              <path d="M5 15.2c5.5 0 5.5 4.8 11 4.8s5.5-4.8 11-4.8 5.5 4.8 8 4.8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+              <path d="M5 23.5c5.5 0 5.5 4.8 11 4.8s5.5-4.8 11-4.8 5.5 4.8 8 4.8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" />
+              <path d="M20 5.5v9m0 0-4-4m4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <div class="brand-copy">
+            <span class="brand-eyebrow">HỆ THỐNG ĐIỀU ĐỘ</span>
+            <span class="brand-title">VỰA <b>TWIN</b></span>
+          </div>
+        </div>
+        <div class="topbar-meta">
+          <span class="live-pill"><span class="status-dot is-playing"></span> MÔ PHỎNG 3D</span>
+          <span class="cycle-label" id="cycle-label">CHU KỲ 14:00 → 14:00</span>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <section class="map-panel" aria-label="Bản đồ logistics 3D">
+          <div class="scene-container" id="scene-container">
+            <div class="map-vignette" aria-hidden="true"></div>
+            <div class="map-topline">
+              <div class="map-chip"><span class="status-dot is-playing"></span><span id="map-phase">Đang khởi tạo bản đồ</span></div>
+              <div class="map-actions">
+                <button class="icon-button" id="reset-view" type="button" title="Đưa góc nhìn về mặc định" aria-label="Reset view">⌖ <span>Reset view</span></button>
+                <button class="toggle-button" id="toggle-labels" type="button" aria-pressed="true">Nhãn <span class="toggle-indicator"></span></button>
+                <button class="toggle-button" id="toggle-outbound" type="button" aria-pressed="true"><span class="legend-dot legend-dot--outbound"></span> Đi</button>
+                <button class="toggle-button" id="toggle-inbound" type="button" aria-pressed="true"><span class="legend-dot legend-dot--inbound"></span> Về</button>
+              </div>
+            </div>
+            <div class="compass" aria-label="Hướng Bắc">
+              <span class="compass-label">BẮC</span>
+              <span class="north-arrow" aria-hidden="true"></span>
+            </div>
+            <div class="map-legend" aria-label="Chú giải tuyến">
+              <span class="legend-item"><i class="legend-dot legend-dot--outbound"></i> Tuyến đi</span>
+              <span class="legend-item"><i class="legend-dot legend-dot--inbound"></i> Tuyến về</span>
+              <span class="legend-item"><i class="legend-dot legend-dot--cold"></i> Kho lạnh</span>
+            </div>
+            <div class="map-loading" id="map-loading" role="status">Đang dựng bản đồ điều độ…</div>
+            <div class="map-tooltip" id="map-tooltip" role="status" hidden></div>
+          </div>
+        </section>
+
+        <aside class="dashboard-panel" aria-label="Bảng điều hành">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">TỔNG QUAN VẬN HÀNH</span>
+              <h1 class="section-title">Nhịp chuỗi lạnh</h1>
+            </div>
+            <span class="map-chip dashboard-chip" id="current-clock">14:00</span>
+          </div>
+
+          <section class="kpi-grid" aria-label="Chỉ số trong ngày">
+            <article class="kpi-card">
+              <span class="kpi-icon kpi-icon--weight" aria-hidden="true">kg</span>
+              <span class="kpi-label">SẢN LƯỢNG GIAO</span>
+              <strong class="kpi-value" id="kpi-kg">—</strong>
+              <span class="kpi-unit">kg / ngày</span>
+            </article>
+            <article class="kpi-card">
+              <span class="kpi-icon kpi-icon--route" aria-hidden="true">↗</span>
+              <span class="kpi-label">QUÃNG ĐƯỜNG</span>
+              <strong class="kpi-value" id="kpi-km">—</strong>
+              <span class="kpi-unit">km / ngày</span>
+            </article>
+            <article class="kpi-card">
+              <span class="kpi-icon kpi-icon--people" aria-hidden="true">◷</span>
+              <span class="kpi-label">GIỜ CÔNG</span>
+              <strong class="kpi-value" id="kpi-hours">—</strong>
+              <span class="kpi-unit">giờ / ngày</span>
+            </article>
+            <article class="kpi-card">
+              <span class="kpi-icon kpi-icon--cost" aria-hidden="true">₫</span>
+              <span class="kpi-label">CHI PHÍ ƯỚC TÍNH</span>
+              <strong class="kpi-value kpi-value--cost" id="kpi-cost">—</strong>
+              <span class="kpi-unit">xăng + công</span>
+            </article>
+          </section>
+
+          <section class="chart-card" aria-labelledby="chart-title">
+            <div class="chart-heading">
+              <div><span class="eyebrow">ĐIỂM NGHẼN</span><h2 class="section-title" id="chart-title">Tải xử lý theo giờ</h2></div>
+              <span class="chart-note">kg / giờ</span>
+            </div>
+            <div class="chart-wrap"><canvas id="load-chart" aria-label="Biểu đồ tải xử lý theo giờ" role="img"></canvas></div>
+          </section>
+
+          <section class="alerts-card" aria-labelledby="alerts-title">
+            <div class="chart-heading">
+              <div><span class="eyebrow">THEO DÕI RỦI RO</span><h2 class="section-title" id="alerts-title">Cảnh báo</h2></div>
+              <span class="alert-count" id="alert-count">0</span>
+            </div>
+            <div class="alert-list" id="alert-list" aria-live="polite"></div>
+          </section>
+
+          <section class="scenario-card" aria-labelledby="scenario-title">
+            <div class="chart-heading">
+              <div><span class="eyebrow">THỬ PHƯƠNG ÁN MỞ RỘNG</span><h2 class="section-title" id="scenario-title">Kịch bản</h2></div>
+            </div>
+            <div class="scenario-options" role="group" aria-label="Chọn kịch bản">
+              <button class="scenario-button is-active" data-scenario="A" type="button" aria-pressed="true"><b>A</b><span>Hiện tại</span></button>
+              <button class="scenario-button" data-scenario="B" type="button" aria-pressed="false"><b>B</b><span>+5 khách sỉ</span></button>
+              <button class="scenario-button" data-scenario="C" type="button" aria-pressed="false"><b>C</b><span>Thêm chuyến sáng</span></button>
+            </div>
+            <div class="scenario-comparison" id="scenario-comparison" aria-live="polite"></div>
+          </section>
+
+          <section class="customer-card" aria-labelledby="customer-title">
+            <div class="chart-heading">
+              <div><span class="eyebrow">MỞ RỘNG MẠNG LƯỚI</span><h2 class="section-title" id="customer-title">Thêm khách mới</h2></div>
+            </div>
+            <form class="customer-form" id="customer-form">
+              <div class="form-field">
+                <label for="customer-type">Loại khách</label>
+                <select id="customer-type" name="type">
+                  <option value="wholesale">Thương lái nhỏ</option>
+                  <option value="retail">Khách lẻ</option>
+                  <option value="province">Khách tỉnh xa</option>
+                </select>
+              </div>
+              <div class="form-field form-field--weight">
+                <label for="customer-kg">Khối lượng trung bình / ngày</label>
+                <div class="weight-input"><input id="customer-kg" name="kg" type="number" min="1" max="10000" step="1" value="80" inputmode="numeric" required /><span>kg</span></div>
+              </div>
+              <button class="primary-button" type="submit"><span aria-hidden="true">＋</span> Thêm khách</button>
+              <p class="form-error" id="customer-error" role="alert" hidden></p>
+            </form>
+            <p class="storage-note">Khách mới lưu trên trình duyệt này.</p>
+            <ul class="customer-list" id="customer-list" aria-label="Khách tự thêm"></ul>
+          </section>
+          <div class="empty-copy" id="dashboard-error" hidden></div>
+        </aside>
+
+        <section class="timeline-panel" aria-label="Điều khiển timeline mô phỏng">
+          <div class="timeline-head">
+            <div class="timeline-title-wrap">
+              <span class="eyebrow">DÒNG THỜI GIAN · CHU KỲ 24 GIỜ</span>
+              <div class="timeline-title"><h2 class="section-title">Lịch vận hành</h2><strong class="timeline-clock" id="timeline-clock">14:00</strong><span class="timeline-date-mark" id="day-marker">NGÀY 1</span></div>
+            </div>
+          </div>
+          <div class="timeline-range-wrap">
+            <div class="timeline-marks" aria-hidden="true">
+              <span class="timeline-mark" style="--mark:0%">14:00</span>
+              <span class="timeline-mark" style="--mark:25%">20:00</span>
+              <span class="timeline-mark" style="--mark:50%">02:00</span>
+              <span class="timeline-mark" style="--mark:75%">08:00</span>
+              <span class="timeline-mark" style="--mark:100%">14:00</span>
+            </div>
+            <input class="timeline-range" id="timeline-slider" type="range" min="0" max="1440" step="5" value="0" aria-label="Scrub timeline 24 giờ" />
+          </div>
+          <div class="timeline-foot">
+            <button class="play-button" id="play-toggle" type="button" aria-pressed="true"><span class="play-icon" id="play-icon" aria-hidden="true">Ⅱ</span><span id="play-label">Tạm dừng</span></button>
+            <div class="timeline-meta">
+              <div class="timeline-status"><span class="status-dot is-playing" id="timeline-status-dot"></span><span id="timeline-status">Chuẩn bị mô phỏng</span></div>
+              <span class="timeline-speed" id="timeline-speed">1 ngày mô phỏng / 2 phút</span>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer class="status-bar"><span>VỰA TWIN <i>·</i> Mô hình tham chiếu, không phải dữ liệu GPS thời gian thực</span><span id="map-scale">100 × 100 đơn vị · ~20 km</span></footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
